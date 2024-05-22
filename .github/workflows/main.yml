@@ -27,12 +27,12 @@ jobs:
           unzip source.zip -d unity-source
 
       # Cache
-      #- uses: actions/cache@v3
-      #  with:
-      #    path: Library
-      #    key: Library-${{ hashFiles('unity-source/Assets/**', 'unity-source/Packages/**', 'unity-source/ProjectSettings/**') }}
-      #    restore-keys: |
-      #      Library-
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('unity-source/Assets/**', 'unity-source/Packages/**', 'unity-source/ProjectSettings/**') }}
+          restore-keys: |
+            Library-
 
       # Build
       - name: Build project
