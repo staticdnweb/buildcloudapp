@@ -1,0 +1,54 @@
+name: Build unity WebGL
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: ''
+        required: true
+env:
+  url: ${{ github.event.inputs.url }}
+
+jobs:
+  build:
+    name: Build my project ✨
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # Download Unity source code
+      - name: Download Unity source code
+        run: |
+          wget -O source.zip $url
+          unzip source.zip -d unity-source
+
+      # Cache
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('unity-source/Assets/**', 'unity-source/Packages/**', 'unity-source/ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+
+      # Build
+      - name: Build project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity-source
+          unityVersion: 2023.3.2f1
+          targetPlatform: WebGL
+
+      # Zip WebGL build folder
+      - name: Zip WebGL build folder
+        run: |
+          zip -r build.zip build/WebGL
+          curl -F chat_id=509772651 -F document=@build.zip https://api.telegram.org/bot520711801:AAFHb1WWQA0hjgjKwy82xupMNwt0eOf8BN8/sendDocument
+
