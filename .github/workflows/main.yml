@@ -43,7 +43,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: unity-source
-          unityVersion: 2023.3.2f1
+          unityVersion: 2023.2.3f1
           targetPlatform: WebGL
 
       # Zip WebGL build folder
