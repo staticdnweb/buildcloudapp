@@ -33,6 +33,14 @@ jobs:
           key: Library-${{ hashFiles('unity-source/Assets/**', 'unity-source/Packages/**', 'unity-source/ProjectSettings/**') }}
           restore-keys: |
             Library-
+            
+      # Add all changes to Git
+      - name: Add changes to Git
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git add .
+          git commit -m "Committing changes before build" || echo "No changes to commit"
 
       # Build
       - name: Build project
