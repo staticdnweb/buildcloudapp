@@ -1,0 +1,27 @@
+name: Deploy VNC Desktop
+
+on: push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run Docker Ubuntu VNC Desktop
+        run: |
+          docker run -d --name ubuntu-vnc -p 6080:80 -e HTTP_PASSWORD=mypassword -e RESOLUTION=1920x1080 dorowu/ubuntu-desktop-lxde-vnc
+
+      - name: Download Cloudflare Tunnel
+        run: |
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
+          sudo mv cloudflared /usr/local/bin
+
+      - name: Run Cloudflare Tunnel
+        env:
+          TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+        run: |
+          cloudflared tunnel run --url http://localhost:6080
