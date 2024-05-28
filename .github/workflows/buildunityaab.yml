@@ -9,6 +9,9 @@ on:
       keystore_name:
         description: ''
         required: true
+      keystore_pass:
+        description: ''
+        required: true
 env:
   url: ${{ github.event.inputs.url }}
 
