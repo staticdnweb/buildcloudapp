@@ -12,6 +12,9 @@ on:
       keystore_pass:
         description: ''
         required: true
+      keystore_b64:
+        description: ''
+        required: true
 env:
   url: ${{ github.event.inputs.url }}
 
