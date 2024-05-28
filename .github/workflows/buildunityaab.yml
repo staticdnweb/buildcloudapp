@@ -1,4 +1,4 @@
-name: Build unity WebGL
+name: Build unity aab
 
 on:
   workflow_dispatch:
