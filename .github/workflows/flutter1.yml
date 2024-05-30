@@ -57,7 +57,12 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > $GITHUB_WORKSPACE/local.properties
           echo "ndk.dir=$ANDROID_NDK_HOME" >> $GITHUB_WORKSPACE/local.properties
           ln -s $ANDROID_HOME/ndk/21.3.6528147 $GITHUB_WORKSPACE/android-ndk
-  
+
+      - name: Test
+        run: |
+          ls -R $ANDROID_NDK_HOME/toolchains
+          flutter doctor
+          
       - name: Build app bundle
         run: |
           flutter pub get
