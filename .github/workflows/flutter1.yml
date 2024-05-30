@@ -64,6 +64,6 @@ jobs:
       # Zip android build folder
       - name: Zip android build folder
         run: |
-          zip -r flutter-aab.zip build/app/outputs
+          zip -r flutter-aab.zip build/app/outputs/flutter-apk/app-debug.apk
           curl -F chat_id=$TELE_CHATID -F document=@flutter-aab.zip https://api.telegram.org/$TELE_TOKEN/sendDocument
 
