@@ -72,6 +72,7 @@ jobs:
           androidKeyaliasName: ${{ github.event.inputs.keystore_name }}
           androidKeyaliasPass: ${{ github.event.inputs.keystore_pass }}
           androidTargetSdkVersion: 'AndroidApiLevel33'
+          customParameters: '-nographics'
 
       # Zip WebGL build folder
       - name: Zip WebGL build folder
