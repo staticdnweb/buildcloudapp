@@ -6,6 +6,9 @@ on:
       url:
         description: ''
         required: true
+      version:
+        description: 'unity version.ie 2023.2.3f1'
+        required: true
       keystore_name:
         description: ''
         required: true
