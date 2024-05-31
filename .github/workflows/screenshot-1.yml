@@ -1,0 +1,48 @@
+name: Android Capture App CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'package app'
+        required: true
+      url:
+        description: 'url to apk'
+        required: true
+
+env:
+  APK_URL: ${{ github.event.inputs.url }}
+  PACKAGE: ${{ github.event.inputs.package }}
+  TELE_TOKEN: ${{ secrets.TELE_TOKEN }}
+  TELE_CHATID: ${{ secrets.TELE_CHATID }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Enable KVM
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+        
+    - name: Prepare Android Emulator
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 30
+        target: google_apis
+        arch: x86_64
+        profile: Nexus 6
+        emulator-options: -no-window -no-boot-anim -noaudio -camera-back none
+        disable-animations: true
+        script: bash ./start_emu.sh
+
+    #- name: Upload screenshot
+    #  uses: actions/upload-artifact@v2
+    #  with:
+    #    name: screenshot
+    #    path: 1.png

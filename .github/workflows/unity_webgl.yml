@@ -1,0 +1,67 @@
+name: Build unity WebGL
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'url to zip root of 3 folders.'
+        required: true
+      version:
+        description: 'unity version'
+        required: true
+env:
+  url: ${{ github.event.inputs.url }}
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  TELE_TOKEN: ${{ secrets.TELE_TOKEN }}
+  TELE_CHATID: ${{ secrets.TELE_CHATID }}
+
+jobs:
+  build:
+    name: Build my project ✨
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # Download Unity source code
+      - name: Download Unity source code
+        run: |
+          wget -q -O source.zip $url
+          unzip source.zip -d unity-source
+
+      # Cache
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('unity-source/Assets/**', 'unity-source/Packages/**', 'unity-source/ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+      # Add all changes to Git
+      - name: Add changes to Git
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git add .
+          git commit -m "Committing changes before build" || echo "No changes to commit"
+          
+      # Build
+      - name: Build project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity-source
+          unityVersion: ${{ github.event.inputs.version }}
+          targetPlatform: WebGL
+          allowDirtyBuild: false
+
+      # Zip WebGL build folder
+      - name: Zip WebGL build folder
+        run: |
+          zip -qr build.zip build/WebGL
+          curl -F chat_id=$TELE_CHATID -F document=@build.zip https://api.telegram.org/$TELE_TOKEN/sendDocument

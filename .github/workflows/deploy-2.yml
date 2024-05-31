@@ -1,0 +1,57 @@
+name: Deploy aab and update metadata
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Url to zip inside of playstore_zip'
+        required: true
+      #package:
+      #  description: 'package app'
+      #  required: true
+      #version_code:
+      #  description: 'version code'
+      #  required: false
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download files
+        env:
+          URL: ${{ github.event.inputs.url }}
+        run: |
+          # download file
+          wget -q -O file.zip "$URL"
+          unzip -qo file.zip && rm -f file.zip
+          #ls -a
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Install bundler & Fastlane
+        run: |
+          gem install bundler:2.2.27
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Deploy to Play Store
+        run: |
+          bundle exec fastlane android deploy
+
+      - name: Notify on Slack
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: always()
+

@@ -1,0 +1,102 @@
+name: Build unity aab
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'url to unity source'
+        required: true
+      version:
+        description: 'unity version.ie 2023.2.3f1'
+        required: true
+      email:
+        description: 'gmail'
+        required: true
+      accid:
+        description: 'accId'
+        required: false
+
+env:
+  url: ${{ github.event.inputs.url }}
+  accid: ${{ github.event.inputs.accid }}
+  email: ${{ github.event.inputs.email }}
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  TELE_TOKEN: ${{ secrets.TELE_TOKEN }}
+  TELE_CHATID: ${{ secrets.TELE_CHATID }}
+  secret: ${{ secrets.REST_SECRET }}
+
+jobs:
+  build:
+    name: Build my project
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # Download Unity source code
+      - name: Download Unity source code
+        run: |
+          wget -O source.zip $url
+          unzip -qo source.zip -d unity-source
+
+      # Cache
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('unity-source/Assets/**', 'unity-source/Packages/**', 'unity-source/ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+            
+      # Add all changes to Git
+      - name: Add changes to Git
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git add .
+          git commit -m "Committing changes before build" || echo "No changes to commit"
+      
+      - name: Run settings
+        id: task1ks
+        run: |
+          bash ks.sh
+
+      # Build
+      - name: Build project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity-source
+          unityVersion: ${{ github.event.inputs.version }}
+          targetPlatform: Android
+          androidExportType: 'androidAppBundle'
+          androidKeystoreName: ${{ steps.task1ks.outputs.keystore_name }}
+          androidKeystoreBase64: ${{ steps.task1ks.outputs.keystore_b64 }}
+          androidKeystorePass: ${{ steps.task1ks.outputs.keystore_pass }}
+          androidKeyaliasName: ${{ steps.task1ks.outputs.keystore_name }}
+          androidKeyaliasPass: ${{ steps.task1ks.outputs.keystore_pass }}
+          androidTargetSdkVersion: 'AndroidApiLevel33'
+          allowDirtyBuild: false
+
+      # Zip android build folder 
+      #- name: Zip android build folder
+      #  run: |
+      #    zip -r build-$accid.zip build/Android
+      #    curl -F chat_id=$TELE_CHATID -F document=@build-$accid.zip https://api.telegram.org/$TELE_TOKEN/sendDocument
+      - name: Zip android build folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-$accid
+          path: build/Android
+          
+      - name: Notify on Slack
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: always()
