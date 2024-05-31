@@ -6,7 +6,7 @@ v=$(curl -ks -X GET "https://tooldata.onrender.com/api/ksexist?name=$accid&secre
 if [[ $v == *"found"* ]]; then
   echo -e "\x1b[31mExist keystore. Please delete it.\x1b[0m"
   curl -s -X POST "https://api.telegram.org/$TELE_TOKEN/sendMessage" -d "chat_id=$TELE_CHATID" -d "text=exist-keystore-of-$accid-please-delete-now";
-  exit;
+  exit 1;
 fi
 curl -ks -X GET "https://tooldata.onrender.com/api/ksgen?name=$accid&secret=$secret&email=$email";
 i=0
@@ -26,7 +26,7 @@ done
 if [[ ! -f key.jks ]]; then
   echo -e "\x1b[31mTimeout, can't generate keystore.\x1b[0m"
   curl -s -X POST "https://api.telegram.org/$TELE_TOKEN/sendMessage" -d "chat_id=$TELE_CHATID" -d "text=failed-gen-keystore-of-$accid";
-  exit
+  exit 1
 fi
 
 ksfile="$(pwd)/key.jks"
