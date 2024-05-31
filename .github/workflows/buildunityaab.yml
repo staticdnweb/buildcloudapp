@@ -1,4 +1,4 @@
-name: Build unity aab
+name: Build unity aab (lite)
 
 on:
   workflow_dispatch:
