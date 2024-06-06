@@ -61,6 +61,7 @@ jobs:
       - name: Build app bundle
         run: |
           flutter pub get
+          flutter pub upgrade
           #flutter format --set-exit-if-changed .
           #flutter analyze .
           flutter build apk --debug
