@@ -29,8 +29,8 @@ jobs:
       # Download flutter source code
       - name: Download Flutter source code
         run: |
-          [[ $url == "mega.nz" ]] && sudo apt-get update && sudo apt-get install -y megatools
-          [[ $url == "mega.nz" ]] && megadl "$url" || wget -O source.zip $url
+          [[ $url == *"mega.nz"* ]] && sudo apt-get update && sudo apt-get install -y megatools
+          [[ $url == *"mega.nz"* ]] && megadl "$url" || wget -O source.zip $url
           f=$(ls *.zip)
           unzip -qo $f && rm $f
 
