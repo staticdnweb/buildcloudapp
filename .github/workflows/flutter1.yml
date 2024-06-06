@@ -53,10 +53,10 @@ jobs:
           #flutter-version-file: pubspec.yaml
 
       
-      - name: Test
-        run: |
-          ls -R $ANDROID_NDK_HOME/toolchains
-          flutter doctor
+      #- name: Test
+      #  run: |
+      #    ls -R $ANDROID_NDK_HOME/toolchains
+      #    flutter doctor
           
       - name: Build app bundle
         run: |
