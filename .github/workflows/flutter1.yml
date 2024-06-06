@@ -49,8 +49,8 @@ jobs:
         with:
           channel: stable
           #flutter-version: 3.19.0
-          #flutter-version: ${{ github.event.inputs.version }}
-          flutter-version-file: pubspec.yaml
+          flutter-version: ${{ github.event.inputs.version }}
+          #flutter-version-file: pubspec.yaml
 
       
       #- name: Test
