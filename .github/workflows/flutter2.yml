@@ -1,4 +1,4 @@
-name: Build flutter test
+name: Build flutter test web
 
 on:
   workflow_dispatch:
