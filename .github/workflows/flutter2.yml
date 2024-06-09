@@ -64,6 +64,7 @@ jobs:
           flutter pub upgrade
           #flutter format --set-exit-if-changed .
           #flutter analyze .
+          flutter config --enable-web
           flutter build web
 
       # Zip android build folder
