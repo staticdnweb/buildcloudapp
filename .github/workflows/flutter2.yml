@@ -1,0 +1,79 @@
+name: Build flutter test
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'url to flutter source'
+        required: true
+      version:
+        description: 'flutter version'
+        required: true
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      url: ${{ github.event.inputs.url }}
+      TELE_TOKEN: ${{ secrets.TELE_TOKEN }}
+      TELE_CHATID: ${{ secrets.TELE_CHATID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+            distribution: 'temurin'
+            java-version: '8'
+
+      # Download flutter source code
+      - name: Download Flutter source code
+        run: |
+          [[ $url == *"mega.nz"* ]] && sudo apt-get update && sudo apt-get install -y megatools
+          [[ $url == *"mega.nz"* ]] && megadl "$url" || wget -O source.zip $url
+          f=$(ls *.zip)
+          unzip -qo $f && rm $f
+
+      # Add all changes to Git
+      - name: Add changes to Git
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git add .
+          git commit -m "Committing changes before build" || echo "No changes to commit"
+      
+      # https://github.com/subosito/flutter-action
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: any
+          #flutter-version: 3.19.0
+          flutter-version: ${{ github.event.inputs.version }}
+          #flutter-version-file: pubspec.yaml
+
+      
+      #- name: Test
+      #  run: |
+      #    ls -R $ANDROID_NDK_HOME/toolchains
+      #    flutter doctor
+          
+      - name: Build app bundle
+        run: |
+          flutter pub get
+          flutter pub upgrade
+          #flutter format --set-exit-if-changed .
+          #flutter analyze .
+          flutter build web
+
+      # Zip android build folder
+      #- name: Zip android build folder
+      #  run: |
+      #    zip -r flutter-aab.zip build/app/outputs/flutter-apk/app-debug.apk
+      #    curl -F chat_id=$TELE_CHATID -F document=@flutter-aab.zip https://api.telegram.org/$TELE_TOKEN/sendDocument
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: build/
